@@ -26,6 +26,17 @@ vim.opt.scrolloff = 8
 vim.opt.signcolumn = "yes"
 vim.opt.statuscolumn = "%s%=%l "
 
-vim.opt.fillchars = { eob = " ", vert = "│", horiz = "─" }
 vim.opt.winborder = "rounded"
 vim.opt.cmdheight = 0
+vim.opt.laststatus = 3
+
+vim.opt.fillchars = {
+    eob = " ",
+    vert = "│",
+    horiz = "─",
+    vertleft = "├",
+    vertright = "┤",
+    horizup = "┬",
+    horizdown = "┴",
+    verthoriz = "┼",
+}
