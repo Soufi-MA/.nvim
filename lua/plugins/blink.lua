@@ -18,7 +18,12 @@ return {
         -- C-k: Toggle signature help (if signature.enabled = true)
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
-        keymap = { preset = 'default' },
+        keymap = { 
+            preset = 'default' ,
+            ["<C-j>"] = { "select_next", "fallback" },
+            ["<C-k>"] = { "select_prev", "fallback" },
+            ["<C-CR>"] = { "accept", "fallback" },
+        },
 
         appearance = {
             -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
@@ -28,8 +33,9 @@ return {
 
         -- (Default) Only show the documentation popup when manually triggered
         completion = {
-            documentation = { auto_show = false },
-            menu = { auto_show = true },
+            documentation = {
+                auto_show = false
+            },
             trigger = {
                 show_on_trigger_character = true
             },

@@ -1,7 +1,7 @@
 return {
     "mason-org/mason-lspconfig.nvim",
     opts = {
-        ensure_installed = { "lua_ls", "ts_ls", "tailwindcss" },
+        ensure_installed = { "lua_ls", "ts_ls", "tailwindcss", "eslint" },
     },
     dependencies = {
         { "mason-org/mason.nvim", opts = {} },
