@@ -14,6 +14,10 @@ vim.keymap.set("n", "N", "Nzzzv")
 vim.keymap.set("x", "p", '"_dp')
 vim.keymap.set({ "n", "v" }, "<leader>y", '"+y')
 vim.keymap.set("n", "<leader>Y", '"+Y')
+vim.keymap.set("n", "<leader>pp", "<cmd>AutoSession search<CR>", {
+	desc = "Project navigation (sessions)",
+	silent = true,
+})
 
 -- Terminal mode escape
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
