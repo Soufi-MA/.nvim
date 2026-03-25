@@ -20,21 +20,17 @@ return {
 				})
 			end
 
-			-- Navigation
 			map("n", "gd", vim.lsp.buf.definition, "[G]oto [D]efinition")
 			map("n", "gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
 			map("n", "gi", vim.lsp.buf.implementation, "[G]oto [I]mplementation")
 			map("n", "gr", vim.lsp.buf.references, "[G]oto [R]eferences")
 
-			-- Information
 			map("n", "K", vim.lsp.buf.hover, "Hover Documentation")
 			map("n", "<leader>vd", vim.diagnostic.open_float, "[V]iew [D]iagnostics")
 
-			-- Actions
 			map("n", "<leader>rn", vim.lsp.buf.rename, "[R]e[n]ame")
 			map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
 
-			-- Diagnostics navigation
 			map("n", "[d", vim.diagnostic.goto_prev, "Previous Diagnostic")
 			map("n", "]d", vim.diagnostic.goto_next, "Next Diagnostic")
 		end
@@ -42,10 +38,29 @@ return {
 		local capabilities = require("blink.cmp").get_lsp_capabilities()
 
 		for _, server_name in ipairs(opts.ensure_installed) do
-			vim.lsp.config(server_name, {
+			local server_opts = {
 				on_attach = on_attach,
 				capabilities = capabilities,
-			})
+			}
+			if server_name == "lua_ls" then
+				server_opts.settings = {
+					Lua = {
+						runtime = {
+							version = "LuaJIT",
+						},
+						diagnostics = {
+							globals = { "vim" },
+						},
+						workspace = {
+							checkThirdParty = false,
+						},
+						telemetry = {
+							enable = false,
+						},
+					},
+				}
+			end
+			vim.lsp.config(server_name, server_opts)
 		end
 
 		require("mason-lspconfig").setup(opts)
