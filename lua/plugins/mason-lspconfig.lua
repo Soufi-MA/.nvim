@@ -10,7 +10,7 @@ return {
 		ensure_installed = { "lua_ls", "ts_ls", "tailwindcss", "eslint" },
 	},
 	config = function(_, opts)
-		local on_attach = function(client, bufnr)
+		local on_attach = function(_, bufnr)
 			local map = function(mode, lhs, rhs, desc)
 				vim.keymap.set(mode, lhs, rhs, {
 					buffer = bufnr,
