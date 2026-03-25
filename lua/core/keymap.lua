@@ -16,3 +16,67 @@ vim.keymap.set("x", "p", '"_dp')
 vim.keymap.set("n", "<leader>y", '"+y')
 vim.keymap.set("v", "<leader>y", '"+y')
 vim.keymap.set("n", "<leader>Y", '"+Y')
+
+vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
+if vim.g.main_term_buf == nil then
+	vim.g.main_term_buf = nil
+end
+
+vim.keymap.set("n", "<leader>tt", function()
+	local buf = vim.g.main_term_buf
+
+	if buf and vim.api.nvim_buf_is_valid(buf) then
+		local win = vim.fn.bufwinid(buf)
+		if win > 0 then
+			-- Hide (keep running in background)
+			vim.api.nvim_win_close(win, false)
+		else
+			-- Show again
+			vim.cmd("botright 15split")
+			vim.api.nvim_win_set_buf(0, buf)
+		end
+	else
+		-- First time: create
+		vim.cmd("botright 15split | terminal")
+		vim.g.main_term_buf = vim.api.nvim_get_current_buf()
+		vim.bo[vim.g.main_term_buf].bufhidden = "hide"
+	end
+end, { desc = "Toggle bottom terminal (hide/show)" })
+
+vim.keymap.set("n", "<leader>tk", function()
+	local buf = vim.g.main_term_buf
+	if buf and vim.api.nvim_buf_is_valid(buf) then
+		vim.api.nvim_buf_delete(buf, { force = true })
+		vim.g.main_term_buf = nil
+		vim.notify("Main terminal killed", vim.log.levels.INFO)
+	else
+		vim.notify("No main terminal to kill", vim.log.levels.WARN)
+	end
+end, { desc = "Kill the main bottom terminal" })
+
+vim.keymap.set("n", "<leader>tn", function()
+	local old_buf = vim.g.main_term_buf
+	if not old_buf or not vim.api.nvim_buf_is_valid(old_buf) then
+		vim.notify("No active main terminal to replace", vim.log.levels.WARN)
+		return
+	end
+
+	local old_win = vim.fn.bufwinid(old_buf)
+
+	-- Create brand-new terminal buffer in the background
+	local new_term_buf = vim.api.nvim_create_buf(true, false)
+	vim.api.nvim_buf_call(new_term_buf, function()
+		vim.cmd("terminal")
+	end)
+	vim.bo[new_term_buf].bufhidden = "hide"
+
+	-- Replace window content only (old buffer stays alive)
+	if old_win > 0 then
+		vim.api.nvim_win_set_buf(old_win, new_term_buf)
+	end
+
+	-- Update global pointer
+	vim.g.main_term_buf = new_term_buf
+
+	vim.notify("Main terminal replaced (old one kept alive in background)", vim.log.levels.INFO)
+end, { desc = "Replace active terminal (keeps old buffer in background)" })
