@@ -2,10 +2,7 @@ return {
 	"rmagatti/auto-session",
 	lazy = false,
 	priority = 100,
-	dependencies = {
-		"nvim-lua/plenary.nvim",
-		"nvim-telescope/telescope.nvim",
-	},
+	dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim" },
 	opts = {
 		enabled = true,
 		auto_save = true,
@@ -18,19 +15,22 @@ return {
 			picker = "telescope",
 			load_on_setup = true,
 			previewer = "summary",
-			picker_opts = {
-				-- matches your telescope style if you want
-				-- theme = "dropdown",        -- or "ivy", "cursor", etc.
-			},
 		},
 
 		root_dir = vim.fn.stdpath("data") .. "/sessions/",
 		auto_delete_empty_sessions = true,
 
-		close_unsupported_windows = true,
+		close_unsupported_windows = false,
 		close_filetypes_on_save = { "checkhealth" },
+
+		preserve_buffer_on_restore = function(bufnr)
+			local bufname = vim.api.nvim_buf_get_name(bufnr)
+			return bufname:match("^term://") ~= nil
+		end,
 	},
 	init = function()
 		vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+
+		vim.o.hidden = true
 	end,
 }
