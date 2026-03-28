@@ -7,7 +7,15 @@ return {
 		"neovim/nvim-lspconfig",
 	},
 	opts = {
-		ensure_installed = { "lua_ls", "ts_ls", "tailwindcss", "eslint" },
+		ensure_installed = {
+			"lua_ls",
+			"vtsls",
+			"tailwindcss",
+			"eslint",
+			"cssls",
+			"html",
+			"jsonls",
+		},
 	},
 	config = function(_, opts)
 		local on_attach = function(_, bufnr)
@@ -45,18 +53,10 @@ return {
 			if server_name == "lua_ls" then
 				server_opts.settings = {
 					Lua = {
-						runtime = {
-							version = "LuaJIT",
-						},
-						diagnostics = {
-							globals = { "vim" },
-						},
-						workspace = {
-							checkThirdParty = false,
-						},
-						telemetry = {
-							enable = false,
-						},
+						runtime = { version = "LuaJIT" },
+						diagnostics = { globals = { "vim" } },
+						workspace = { checkThirdParty = false },
+						telemetry = { enable = false },
 					},
 				}
 			end

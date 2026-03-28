@@ -7,8 +7,8 @@ return {
 	},
 
 	keys = {
-		{ "<leader>pf", "<cmd>Telescope find_files<cr>", desc = "Find files" },
-		{ "<C-p>", "<cmd>Telescope git_files<cr>", desc = "Git files" },
+		{ "<C-p>", "<cmd>Telescope find_files<cr>", desc = "Find files" },
+		{ "<leader>pf", "<cmd>Telescope git_files<cr>", desc = "Git files" },
 		{
 			"<leader>pg",
 			function()

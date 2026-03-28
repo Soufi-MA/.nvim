@@ -1,4 +1,5 @@
 vim.cmd("let g:netrw_banner = 0")
+vim.g.netrw_list_hide = [[^\.\.\=/\=$]]
 vim.opt.guicursor = ""
 
 vim.opt.nu = true
@@ -35,9 +36,4 @@ vim.opt.fillchars = {
 	eob = " ",
 	vert = "│",
 	horiz = "─",
-	vertleft = "├",
-	vertright = "┤",
-	horizup = "┬",
-	horizdown = "┴",
-	verthoriz = "┼",
 }
