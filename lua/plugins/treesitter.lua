@@ -9,6 +9,7 @@ return {
 			"javascript",
 			"jsx",
 			"html",
+			"html_tags",
 			"css",
 			"scss",
 			"json",

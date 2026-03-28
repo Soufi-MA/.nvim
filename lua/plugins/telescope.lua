@@ -4,6 +4,7 @@ return {
 	dependencies = {
 		"nvim-lua/plenary.nvim",
 		{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+		"3rd/image.nvim",
 	},
 
 	keys = {
@@ -77,4 +78,65 @@ return {
 			desc = "Pick buffer",
 		},
 	},
+
+	config = function()
+		require("telescope").setup({
+			extensions = {
+				fzf = {},
+			},
+			pickers = {
+				find_files = {
+					hidden = true,
+					no_ignore = true,
+				},
+			},
+		})
+		require("telescope").load_extension("fzf")
+
+		local previewers = require("telescope.previewers")
+		local image = require("image")
+
+		image.setup({
+			backend = "kitty",
+			processor = "magick_cli",
+			integrations = {
+				markdown = { enabled = false },
+				neorg = { enabled = false },
+			},
+		})
+
+		local supported = { "png", "jpg", "jpeg", "gif", "webp", "svg", "avif", "heic" }
+		local get_ext = function(path)
+			return path:lower():match("^.+%.(%w+)$") or ""
+		end
+
+		local current_img = nil
+		local last_path = ""
+
+		local clear = function()
+			if current_img then
+				current_img:clear()
+				current_img = nil
+			end
+		end
+
+		local buffer_previewer_maker = function(filepath, bufnr, opts)
+			opts = opts or {}
+			if last_path ~= filepath then
+				clear()
+			end
+			last_path = filepath
+
+			if vim.tbl_contains(supported, get_ext(filepath)) then
+				current_img = image.from_file(filepath, { window = opts.winid, buffer = bufnr })
+				if current_img then
+					current_img:render()
+				end
+			else
+				previewers.buffer_previewer_maker(filepath, bufnr, opts)
+			end
+		end
+
+		require("telescope.config").values.buffer_previewer_maker = buffer_previewer_maker
+	end,
 }
