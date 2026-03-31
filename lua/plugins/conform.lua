@@ -17,10 +17,10 @@ return {
 			["*"] = { "trim_whitespace" },
 			["_"] = { "trim_whitespace" },
 
-			javascript = { "prettierd", "eslint_d" },
-			typescript = { "prettierd", "eslint_d" },
-			javascriptreact = { "prettierd", "eslint_d" },
-			typescriptreact = { "prettierd", "eslint_d" },
+			javascript = { "prettierd" },
+			typescript = { "prettierd" },
+			javascriptreact = { "prettierd" },
+			typescriptreact = { "prettierd" },
 
 			svelte = { "prettierd" },
 			vue = { "prettierd" },

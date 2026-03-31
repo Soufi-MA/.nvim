@@ -11,7 +11,7 @@ return {
 			"lua_ls",
 			"vtsls",
 			"tailwindcss",
-			"eslint",
+			"prettierd",
 			"cssls",
 			"html",
 			"jsonls",
