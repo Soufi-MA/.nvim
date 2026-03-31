@@ -1,6 +1,6 @@
 return {
 	"mason-org/mason-lspconfig.nvim",
-	event = { "BufReadPre" },
+	event = { "BufReadPre", "BufNewFile" },
 	cmd = { "LspInfo", "LspStart", "LspStop", "LspRestart", "LspInstall" },
 	dependencies = {
 		{ "mason-org/mason.nvim", opts = {} },
@@ -43,14 +43,31 @@ return {
 			map("n", "]d", vim.diagnostic.goto_next, "Next Diagnostic")
 		end
 
-		local capabilities = require("blink.cmp").get_lsp_capabilities()
+		local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 		for _, server_name in ipairs(opts.ensure_installed) do
 			local server_opts = {
 				on_attach = on_attach,
 				capabilities = capabilities,
 			}
-			if server_name == "lua_ls" then
+
+			if server_name == "vtsls" then
+				server_opts.settings = {
+					vtsls = {
+						experimental = {
+							completion = {
+								enableServerSideFuzzyMatch = true,
+								entriesLimit = 50,
+							},
+						},
+					},
+					typescript = {
+						tsserver = {
+							maxTsServerMemory = 8192,
+						},
+					},
+				}
+			elseif server_name == "lua_ls" then
 				server_opts.settings = {
 					Lua = {
 						runtime = { version = "LuaJIT" },
