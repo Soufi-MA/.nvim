@@ -15,6 +15,7 @@ return {
 			"cssls",
 			"html",
 			"jsonls",
+			"eslint",
 		},
 	},
 	config = function(_, opts)
