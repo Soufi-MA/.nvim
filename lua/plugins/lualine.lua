@@ -52,22 +52,32 @@ return {
 			symbols = { added = " ", modified = " ", removed = " " },
 		}
 
+		local root_markers = {
+			".git",
+			"package.json",
+			"Cargo.toml",
+			"go.mod",
+			"pyproject.toml",
+			"tsconfig.json",
+		}
+
+		local function get_root()
+			return vim.fs.root(0, root_markers) or vim.fn.getcwd()
+		end
+
+		local function get_project_name()
+			local root = get_root()
+			local name = vim.fn.fnamemodify(root, ":t")
+			return name ~= "" and name or "[Root]"
+		end
+
 		local function get_project_filename()
 			local bufname = vim.api.nvim_buf_get_name(0)
 			if bufname == "" then
 				return "[No Name]"
 			end
 
-			local root_markers = {
-				".git",
-				"package.json",
-				"Cargo.toml",
-				"go.mod",
-				"pyproject.toml",
-				"tsconfig.json",
-			}
-
-			local root = vim.fs.root(0, root_markers) or vim.fn.getcwd()
+			local root = get_root()
 
 			local rel_path = bufname
 			if root and bufname:find("^" .. vim.pesc(root) .. "/") then
@@ -89,6 +99,11 @@ return {
 
 		local filename = { get_project_filename }
 
+		local project_name = {
+			get_project_name,
+			icon = { " ", color = { fg = "#A6D4DE" } },
+		}
+
 		local branch = { "branch", icon = { "", color = { fg = "#A6D4DE" } }, "|" }
 
 		lualine.setup({
@@ -101,7 +116,7 @@ return {
 			sections = {
 				lualine_a = { mode },
 				lualine_b = { branch },
-				lualine_c = { diff, filename },
+				lualine_c = { diff, project_name, filename },
 				lualine_x = {
 					{
 						lazy_status.updates,
