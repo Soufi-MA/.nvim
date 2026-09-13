@@ -17,6 +17,7 @@ return {
 			"jsonls",
 			"eslint",
 		},
+		automatic_enable = true,
 	},
 	config = function(_, opts)
 		local on_attach = function(_, bufnr)
@@ -46,40 +47,80 @@ return {
 
 		local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-		for _, server_name in ipairs(opts.ensure_installed) do
-			local server_opts = {
-				on_attach = on_attach,
-				capabilities = capabilities,
-			}
+		vim.lsp.config("vtsls", {
+			on_attach = on_attach,
+			capabilities = capabilities,
+			settings = {
+				vtsls = {
+					experimental = {
+						completion = {
+							enableServerSideFuzzyMatch = true,
+							entriesLimit = 50,
+						},
+					},
+				},
+				typescript = {
+					tsserver = {
+						maxTsServerMemory = 8192,
+					},
+				},
+			},
+		})
 
-			if server_name == "vtsls" then
-				server_opts.settings = {
-					vtsls = {
-						experimental = {
-							completion = {
-								enableServerSideFuzzyMatch = true,
-								entriesLimit = 50,
-							},
-						},
-					},
-					typescript = {
-						tsserver = {
-							maxTsServerMemory = 8192,
-						},
-					},
-				}
-			elseif server_name == "lua_ls" then
-				server_opts.settings = {
-					Lua = {
-						runtime = { version = "LuaJIT" },
-						diagnostics = { globals = { "vim" } },
-						workspace = { checkThirdParty = false },
-						telemetry = { enable = false },
-					},
-				}
-			end
-			vim.lsp.config(server_name, server_opts)
-		end
+		vim.lsp.config("lua_ls", {
+			on_attach = on_attach,
+			capabilities = capabilities,
+			settings = {
+				Lua = {
+					runtime = { version = "LuaJIT" },
+					diagnostics = { globals = { "vim" } },
+					workspace = { checkThirdParty = false },
+					telemetry = { enable = false },
+				},
+			},
+		})
+
+		vim.lsp.config("tailwindcss", {
+			on_attach = on_attach,
+			capabilities = capabilities,
+		})
+
+		vim.lsp.config("cssls", {
+			on_attach = on_attach,
+			capabilities = capabilities,
+		})
+
+		vim.lsp.config("html", {
+			on_attach = on_attach,
+			capabilities = capabilities,
+		})
+
+		vim.lsp.config("jsonls", {
+			on_attach = on_attach,
+			capabilities = capabilities,
+		})
+
+		-- eslint (with flat config support for ESLint v9)
+		vim.lsp.config("eslint", {
+			on_attach = function(client, bufnr)
+				on_attach(client, bufnr)
+				vim.api.nvim_create_autocmd("BufWritePre", {
+					buffer = bufnr,
+					callback = function() end,
+				})
+			end,
+			capabilities = capabilities,
+			settings = {
+				experimental = {
+					useFlatConfig = true,
+				},
+				codeActionOnSave = {
+					enable = false,
+					mode = "all",
+				},
+				format = false,
+			},
+		})
 
 		require("mason-lspconfig").setup(opts)
 	end,

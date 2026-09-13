@@ -80,7 +80,31 @@ return {
 	},
 
 	config = function()
+		local image = require("image")
+		local previewers = require("telescope.previewers")
+
+		-- Image.nvim setup
+		image.setup({
+			backend = "kitty",
+			processor = "magick_cli",
+			integrations = {
+				markdown = { enabled = false },
+				neorg = { enabled = false },
+			},
+			max_width = 100,
+			max_height = 12,
+			max_height_window_percentage = 85, -- leave room for the dimensions label
+			max_width_window_percentage = math.huge,
+			window_overlap_clear_enabled = true,
+			window_overlap_clear_ft_ignore = { "cmp_menu", "cmp_docs", "" },
+		})
+
 		require("telescope").setup({
+			defaults = {
+				layout_config = {
+					preview_width = 0.6,
+				},
+			},
 			extensions = {
 				fzf = {},
 			},
@@ -93,50 +117,121 @@ return {
 		})
 		require("telescope").load_extension("fzf")
 
-		-- local previewers = require("telescope.previewers")
-		-- local image = require("image")
-		--
-		-- image.setup({
-		-- 	backend = "kitty",
-		-- 	processor = "magick_cli",
-		-- 	integrations = {
-		-- 		markdown = { enabled = false },
-		-- 		neorg = { enabled = false },
-		-- 	},
-		-- })
-		--
-		-- local supported = { "png", "jpg", "jpeg", "gif", "webp", "svg", "avif", "heic" }
-		-- local get_ext = function(path)
-		-- 	return path:lower():match("^.+%.(%w+)$") or ""
-		-- end
-		--
-		-- local current_img = nil
-		-- local last_path = ""
-		--
-		-- local clear = function()
-		-- 	if current_img then
-		-- 		current_img:clear()
-		-- 		current_img = nil
-		-- 	end
-		-- end
-		--
-		-- local buffer_previewer_maker = function(filepath, bufnr, opts)
-		-- 	opts = opts or {}
-		-- 	if last_path ~= filepath then
-		-- 		clear()
-		-- 	end
-		-- 	last_path = filepath
-		--
-		-- 	if vim.tbl_contains(supported, get_ext(filepath)) then
-		-- 		current_img = image.from_file(filepath, { window = opts.winid, buffer = bufnr })
-		-- 		if current_img then
-		-- 			current_img:render()
-		-- 		end
-		-- 	else
-		-- 		previewers.buffer_previewer_maker(filepath, bufnr, opts)
-		-- 	end
-		-- end
-		--
-		-- require("telescope.config").values.buffer_previewer_maker = buffer_previewer_maker
+		-------------------------------------------------
+		-- Image preview + dimensions label
+		-------------------------------------------------
+		local supported = {
+			png = true,
+			jpg = true,
+			jpeg = true,
+			gif = true,
+			webp = true,
+		}
+
+		local function is_image(path)
+			local ext = path:lower():match("%.([%w]+)$")
+			return ext and supported[ext]
+		end
+
+		local current_img = nil
+		local dim_win = nil
+		local dim_buf = nil
+
+		local function clear_image()
+			if current_img then
+				pcall(function()
+					current_img:clear()
+				end)
+				current_img = nil
+			end
+			pcall(image.clear)
+
+			if dim_win and vim.api.nvim_win_is_valid(dim_win) then
+				pcall(vim.api.nvim_win_close, dim_win, true)
+			end
+			dim_win = nil
+
+			if dim_buf and vim.api.nvim_buf_is_valid(dim_buf) then
+				pcall(vim.api.nvim_buf_delete, dim_buf, { force = true })
+			end
+			dim_buf = nil
+		end
+
+		local buffer_previewer_maker = function(filepath, bufnr, opts)
+			opts = opts or {}
+			filepath = vim.fn.expand(filepath)
+
+			clear_image()
+
+			if not is_image(filepath) then
+				previewers.buffer_previewer_maker(filepath, bufnr, opts)
+				return
+			end
+
+			vim.defer_fn(function()
+				if not vim.api.nvim_win_is_valid(opts.winid) or not vim.api.nvim_buf_is_valid(bufnr) then
+					return
+				end
+
+				-- Clear the preview buffer
+				vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {})
+
+				local ok, img = pcall(image.from_file, filepath, {
+					window = opts.winid,
+					buffer = bufnr,
+					with_virtual_padding = true,
+				})
+
+				if not (ok and img) then
+					previewers.buffer_previewer_maker(filepath, bufnr, opts)
+					return
+				end
+
+				current_img = img
+				pcall(function()
+					img:render()
+				end)
+
+				-- Dimensions floating window (bottom center)
+				local w = img.image_width or "?"
+				local h = img.image_height or "?"
+				local info = string.format(" %s × %s px ", w, h)
+
+				dim_buf = vim.api.nvim_create_buf(false, true)
+				vim.api.nvim_buf_set_lines(dim_buf, 0, -1, false, { info })
+
+				local win_width = vim.api.nvim_win_get_width(opts.winid)
+				local win_height = vim.api.nvim_win_get_height(opts.winid)
+				local text_width = vim.fn.strdisplaywidth(info)
+
+				dim_win = vim.api.nvim_open_win(dim_buf, false, {
+					relative = "win",
+					win = opts.winid,
+					width = text_width,
+					height = 1,
+					row = win_height - 2, -- near bottom
+					col = math.floor((win_width - text_width) / 2),
+					style = "minimal",
+					border = "none",
+					focusable = false,
+					zindex = 50,
+				})
+
+				vim.api.nvim_set_option_value("winhl", "Normal:Comment", { win = dim_win })
+			end, 30)
+		end
+
+		require("telescope.config").values.buffer_previewer_maker = buffer_previewer_maker
+
+		-- Cleanup when preview closes
+		vim.api.nvim_create_autocmd("User", {
+			pattern = "TelescopePreviewerClosed",
+			callback = clear_image,
+		})
+
+		vim.api.nvim_create_autocmd("BufLeave", {
+			pattern = "Telescope*",
+			callback = clear_image,
+		})
 	end,
 }
