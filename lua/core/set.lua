@@ -37,3 +37,5 @@ vim.opt.fillchars = {
 	vert = "│",
 	horiz = "─",
 }
+
+vim.o.termbidi = true
