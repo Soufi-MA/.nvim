@@ -11,6 +11,10 @@ end
 
 local term_height = nil
 
+local function is_bt_term(buf)
+	return vim.bo[buf].buftype == "terminal" and vim.api.nvim_buf_get_name(buf):match("Term %(%d+%)$") ~= nil
+end
+
 return {
 	"CRAG666/betterTerm.nvim",
 	lazy = false,
@@ -38,11 +42,17 @@ return {
 			mode = { "n", "t" },
 			"<C-S-~>",
 			function()
-				-- Find the next free index and open it (this creates a new terminal)
+				local height = is_bt_term(vim.api.nvim_get_current_buf()) and vim.api.nvim_win_get_height(0)
+					or term_height
+
 				local bt = require("betterTerm")
 				local next_id = (vim.g.betterterm_next_id or 0) + 1
 				vim.g.betterterm_next_id = next_id
 				bt.open(next_id)
+
+				if height then
+					vim.api.nvim_win_set_height(0, height)
+				end
 			end,
 			desc = "New terminal",
 		},
@@ -103,7 +113,7 @@ return {
 					return
 				end
 				local buf = vim.api.nvim_win_get_buf(win)
-				if vim.bo[buf].buftype == "terminal" then
+				if is_bt_term(buf) then
 					-- if maximized, remember the height from before maximizing
 					term_height = vim.w[win].bt_prev_height or vim.api.nvim_win_get_height(win)
 				end
@@ -113,7 +123,7 @@ return {
 		-- Restore remembered height when a terminal window opens
 		vim.api.nvim_create_autocmd("BufWinEnter", {
 			callback = function(args)
-				if vim.bo[args.buf].buftype ~= "terminal" or not term_height then
+				if not is_bt_term(args.buf) or not term_height then
 					return
 				end
 				vim.schedule(function()
