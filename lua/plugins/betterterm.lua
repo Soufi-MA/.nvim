@@ -9,6 +9,8 @@ local function toggle_maximize()
 	end
 end
 
+local term_height = nil
+
 return {
 	"CRAG666/betterTerm.nvim",
 	lazy = false,
@@ -90,6 +92,36 @@ return {
 			pattern = "term://*",
 			callback = function()
 				vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { buffer = true, silent = true })
+			end,
+		})
+
+		-- Remember terminal height when its window closes
+		vim.api.nvim_create_autocmd("WinClosed", {
+			callback = function(args)
+				local win = tonumber(args.match)
+				if not win or not vim.api.nvim_win_is_valid(win) then
+					return
+				end
+				local buf = vim.api.nvim_win_get_buf(win)
+				if vim.bo[buf].buftype == "terminal" then
+					-- if maximized, remember the height from before maximizing
+					term_height = vim.w[win].bt_prev_height or vim.api.nvim_win_get_height(win)
+				end
+			end,
+		})
+
+		-- Restore remembered height when a terminal window opens
+		vim.api.nvim_create_autocmd("BufWinEnter", {
+			callback = function(args)
+				if vim.bo[args.buf].buftype ~= "terminal" or not term_height then
+					return
+				end
+				vim.schedule(function()
+					local win = vim.fn.bufwinid(args.buf)
+					if win ~= -1 and not vim.w[win].bt_prev_height then
+						vim.api.nvim_win_set_height(win, term_height)
+					end
+				end)
 			end,
 		})
 	end,
