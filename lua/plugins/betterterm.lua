@@ -62,7 +62,12 @@ return {
 			mode = { "n", "t" },
 			"<C-h>",
 			function()
+				local height = is_bt_term(vim.api.nvim_get_current_buf()) and vim.api.nvim_win_get_height(0)
+					or term_height
 				require("betterTerm").cycle(-1)
+				if height then
+					vim.api.nvim_win_set_height(0, height)
+				end
 			end,
 			desc = "Previous terminal",
 		},
@@ -70,7 +75,12 @@ return {
 			mode = { "n", "t" },
 			"<C-l>",
 			function()
+				local height = is_bt_term(vim.api.nvim_get_current_buf()) and vim.api.nvim_win_get_height(0)
+					or term_height
 				require("betterTerm").cycle(1)
+				if height then
+					vim.api.nvim_win_set_height(0, height)
+				end
 			end,
 			desc = "Next terminal",
 		},
@@ -92,7 +102,7 @@ return {
 			end,
 			desc = "Decrease terminal height",
 		},
-		{ mode = { "n", "t" }, "<C-m>", toggle_maximize, desc = "Maximize terminal (toggle)" },
+		{ mode = { "n", "t" }, "<C-n>", toggle_maximize, desc = "Maximize terminal (toggle)" },
 	},
 	config = function(_, opts)
 		require("betterTerm").setup(opts)
@@ -101,7 +111,7 @@ return {
 		vim.api.nvim_create_autocmd("TermOpen", {
 			pattern = "term://*",
 			callback = function()
-				vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { buffer = true, silent = true })
+				vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]], { buffer = true, silent = true })
 			end,
 		})
 
