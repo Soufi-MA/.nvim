@@ -92,7 +92,7 @@ return {
 			end,
 			desc = "Decrease terminal height",
 		},
-		{ mode = { "n", "t" }, "<A-m>", toggle_maximize, desc = "Maximize terminal (toggle)" },
+		{ mode = { "n", "t" }, "<C-m>", toggle_maximize, desc = "Maximize terminal (toggle)" },
 	},
 	config = function(_, opts)
 		require("betterTerm").setup(opts)
