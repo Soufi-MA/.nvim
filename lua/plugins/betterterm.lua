@@ -10,6 +10,7 @@ local function toggle_maximize()
 end
 
 local term_height = nil
+local term_prev_height = nil
 
 local function is_bt_term(buf)
 	return vim.bo[buf].buftype == "terminal" and vim.api.nvim_buf_get_name(buf):match("Term %(%d+%)$") ~= nil
@@ -124,8 +125,8 @@ return {
 				end
 				local buf = vim.api.nvim_win_get_buf(win)
 				if is_bt_term(buf) then
-					-- if maximized, remember the height from before maximizing
-					term_height = vim.w[win].bt_prev_height or vim.api.nvim_win_get_height(win)
+					term_height = vim.api.nvim_win_get_height(win)
+					term_prev_height = vim.w[win].bt_prev_height
 				end
 			end,
 		})
@@ -140,6 +141,7 @@ return {
 					local win = vim.fn.bufwinid(args.buf)
 					if win ~= -1 and not vim.w[win].bt_prev_height then
 						vim.api.nvim_win_set_height(win, term_height)
+						vim.w[win].bt_prev_height = term_prev_height
 					end
 				end)
 			end,
